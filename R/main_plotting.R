@@ -16,9 +16,9 @@ rm(list=ls())
 # Load functions and datasets
 # - - - - - - - - - - - - - - - - - - 
 
-setwd("~/Documents/Schools_project/school-networks-HARD")
+setwd("~/Documents/GitHub/school-networks-15")
 source("R/network_analysis_functions.R")
-source("R/plot_results.R")
+source("R/plot_summary_results.R")
 
 schooltab=c("1","2","3","4")
 
@@ -33,6 +33,17 @@ for(school1 in 1:4){
   source("R/load_school_data.R",local = F)
   network.analysis(1,school1,mutualPick = 0,plotALL=F,plotClass=F,plotRound=T)
 }
+
+# - - - 
+# Fig 2 - plot all connections
+par(mfrow = c(4,2))
+for(school1 in 1:4){
+  source("R/load_school_data.R",local = F)
+  network.analysis(1,school1,mutualPick = 0,plotALL=TRUE,plotClass=T)
+}
+dev.copy(pdf,paste("plots/Figure_3.pdf",sep=""),width=5,height=10)
+dev.off()
+
 
 # - - - 
 # Table 1 - number of unique participants and contacts
@@ -59,23 +70,26 @@ summary_rounds = data.frame(summary_rounds)
 names(summary_rounds) = c("School","Round","Unique_part","M","F") 
 write.csv(summary_rounds,"plots/TableS1.csv")
 
-
 # - - - 
-# Fig 3 - plot all connections
-par(mfrow = c(4,2))
+# Table 2 - bootstrap network statistics
+summary_boot = NULL
 for(school1 in 1:4){
   source("R/load_school_data.R",local = F)
-  network.analysis(1,school1,mutualPick = 0,plotALL=TRUE,plotClass=T)
+  output_boot = network.bootstrap(1,school1,mutualPick = 0,boostrap_runs=50)
+  summary_boot = rbind(summary_boot,output_boot)
 }
-dev.copy(pdf,paste("plots/Figure_3.pdf",sep=""),width=5,height=10)
-dev.off()
 
-source("compile_summary_data.R")
+rownames(summary_boot) = c(1:4)
+write.csv(t(summary_boot),"plots/Table2.csv")
 
-#output_round()
-# Store ROC data
-#plot_consistency()
-plot_consistency_pred()
+
+# - - - 
+# Compile network summary data
+source("R/compile_summary_data.R")
+for(school1 in 1:4){
+  source("R/load_school_data.R",local = F)
+  plot_consistency_pred(school1)
+}
 
 
 

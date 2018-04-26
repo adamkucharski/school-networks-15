@@ -304,9 +304,9 @@ network.analysis <- function(round1,school1,mutualPick=0,plotALL=F,plotClass=F,p
 # Network bootstrap sampling
 # - - - - - - - - - - - - - - - - - - 
 
-network.bootstrap <- function(round1,school1,mutualPick=0,plotALL=F){
+network.bootstrap <- function(round1,school1,mutualPick=0,plotALL=F,boostrap_runs=10){
   
-  # round1 = 1; mutualPick=0; school1=1 ; plotALL=T; 
+  # round1 = 1; mutualPick=0; school1=3 ; plotALL=T; boostrap_runs=10
   
   # Edit matrices to put in correct format
   # Change to ensure only draw from people in current survey
@@ -318,54 +318,104 @@ network.bootstrap <- function(round1,school1,mutualPick=0,plotALL=F){
   
 
   # Set up bootstrap
-  mean_participants = c(77,12,92,31)   # Mean partipants for each school
+  mean_participants = c(77,121,92,24)   # Mean partipants for each school
   n_participants = mean_participants[school1] # Pick relevant school
+  bootstrap_table = NULL
   
   # - - -
   # Boostrap sample from the contact distribution
   
-  sample_participants = sample(idlist[idlist!="0_ID_NA"],n_participants,replace=F) %>% sort() # Sample participants
-  sample_entries = sapply(sample_participants,function(x){
-                                                  y = which(x==dataset1a[,1]); 
-                                                  if(length(y)>1){w = sample(y,1)}else{w = y}; 
-                                                  w } ) %>% as.numeric()  # Pick entries from matrix
+  for(kk in 1:boostrap_runs){
+    
+    sample_participants = sample(idlist[idlist!="0_ID_NA"],n_participants,replace=F) %>% sort() # Sample participants
+    sample_entries = sapply(sample_participants,function(x){
+                                                    y = which(x==dataset1a[,1]); 
+                                                    if(length(y)>1){w = sample(y,1)}else{w = y}; 
+                                                    w } ) %>% as.numeric()  # Pick entries from matrix
+    
+    # Sample matrix entries
+    dataset1a0 = dataset1a[sample_entries,]
+    datasetP1=matrix(match(dataset1a0, idlist),ncol=7) # Need to use participants only in plot
+    datasetP1=datasetP1[!is.na(datasetP1[,1]),] # Exclude non-participants from matrix - for plot
+    datasetP = datasetP1
+    
+    # Define network characteristics
+    NetworkMatrix=datasetP
+    xB <- unique(NetworkMatrix[,1]); xB <- xB[!is.na(xB)]  # Identify unique links in first section
+    x2 <- n_convert(NetworkMatrix,xB)$x2out
+    x2 <- t(x2); dim(x2) <- NULL
+    g2.01 <- make_graph(edges=x2,n=length(xB) ,directed=T)
   
-  # Sample matrix entries
-  dataset1a0 = dataset1a[sample_entries,]
+    # Set up colours
+    col1 = dataset1[match(sample_participants,dataset1[,1]),"MF"]# Match to original matrix
+    col1[is.na(col1)]=0
+    pickshape=sapply(col1,function(x){ifelse(x==1,'circle','square')})
+    pickcol=sapply(col1,function(x){ifelse(x==1,'white','grey')}) # 2=F 1=M
   
-  datasetP1=matrix(match(dataset1a0, idlist),ncol=7) # Need to use participants only in plot
-  datasetP1=datasetP1[!is.na(datasetP1[,1]),] # Exclude non-participants from matrix - for plot
+    # Communities
+    g2.02 = as.undirected(g2.01,"each") # make graph undirected - create undirected edge for each directed one
+    ceb <- cluster_edge_betweenness(g2.02) # Communities using edge betweeness
+    clp <- cluster_label_prop(g2.02) # Communities using edge betweeness
+    
+    
+    
+    # Class assortativity
+    factor0 = datasetMAIN[match(xB,datasetP0[,1]),"Class"]; factor0[is.na(factor0)]=0
+    
+    flink=c(mf=assortativity_nominal(g2.01, as.factor(pickcol), directed=T),
+            class=assortativity_nominal(g2.01, as.factor(factor0), directed=T)
+    )
+    
+    if(school1==3){flink[["mf"]]=0}
+    
+    # - - - 
+    # Calculate clustering of Males Only
+    NetworkMatrix=datasetP
+    NetworkMatrix[col1!=1,1:7]=NA # Pick out males
+    
+    # Set up network in correct format
+    xB <- unique(NetworkMatrix[,1]); xB <- xB[!is.na(xB)]  # Identify unique links in first section
+    x2 <- n_convert(NetworkMatrix,xB)$x2out # DEBUG HERE
+    x2 <- t(x2); dim(x2) <- NULL
+    g2m <- make_graph(edges=x2,n=length(xB) ,directed=T)
+    
+    # - - - 
+    # Calculate clustering of Females Only
+    if(school1 != 3){
+      NetworkMatrix=datasetP
+      NetworkMatrix[col1!=2,1:7]=NA # Pick out females
+      
+      # Convert to network readable code
+      xB <- unique(NetworkMatrix[,1]); xB <- xB[!is.na(xB)]  # Identify unique links in first section
+      x2 <- n_convert(NetworkMatrix,xB)$x2out
+      x2 <- t(x2); dim(x2) <- NULL
+      g2f <- make_graph(edges=x2,n=length(xB) ,directed=T)
+      tg2 <- transitivity(g2f)
+    }else{g2f=0;tg2=0}
+    
+    # Graph stats, including degree distribution and global clustering
+    bootstrap_table = rbind(bootstrap_table, c(diameter(g2.01),transitivity(g2.01),transitivity(g2m),tg2,flink[["mf"]],flink[["class"]],c(length(ceb),length(clp))) )
+    
+  }
   
-  datasetP = datasetP1
+  bootstrap_table = bootstrap_table %>% data.frame()
   
-  # Define network characteristics
-  NetworkMatrix=datasetP
-  xB <- unique(NetworkMatrix[,1]); xB <- xB[!is.na(xB)]  # Identify unique links in first section
-  x2 <- n_convert(NetworkMatrix,xB)$x2out
-  x2 <- t(x2); dim(x2) <- NULL
-  g2.01 <- make_graph(edges=x2,n=length(xB) ,directed=T)
+  names(bootstrap_table) = c("diameter","clustering","clusteringM","clusteringF","assortativity_MF","assortativity_class","community_EB","community_LP")
+  
+  apply(bootstrap_table,2,c.text)
 
-  
-  # DEBUG et up colours - XX check these are matching properly XX
-  #yy = match(xB,datasetP0[,1])
-  #datasetP0[yy,1]-xB
-  
-  
-  # Set up colours
-  col1 = dataset1[match(sample_participants,dataset1[,1]),"MF"]# Match to original matrix
-  col1[is.na(col1)]=0
-  pickshape=sapply(col1,function(x){ifelse(x==1,'circle','square')})
-  pickcol=sapply(col1,function(x){ifelse(x==1,'white','grey')}) # 2=F 1=M
+}
 
-  
-  # Class assortativity
-  factor0 = datasetMAIN[match(xB,datasetP0[,1]),"Class"]; factor0[is.na(factor0)]=0
-  
-  flink=c(mf=assortativity_nominal(g2.01, as.factor(pickcol), directed=T),
-          class=assortativity_nominal(g2.01, as.factor(factor0), directed=T)
-  )
+c.text <- function(x,sigF=2){
+  x=x[!is.na(x)] # remove NA
+  bp1=signif(c(median(x),quantile(x,0.025),quantile(x,0.975)),sigF)
+  paste(bp1[1]," (",bp1[2],"-",bp1[3],")",sep="")
+}
 
-
+c.nume<-function(x){
+  x=x[!is.na(x)] # remove NA
+  bp1=c(median(x),quantile(x,0.025),quantile(x,0.975))
+  as.numeric(bp1)
 }
 
 
