@@ -283,12 +283,13 @@ plot_consistency_pred <- function(school1){
 
 plot_predictive_power <- function(){
   
-  par(mfrow=c(3,1))
+  par(mfrow=c(2,2))
   par(mar = c(3,3,1,1),mgp=c(2,0.7,0))
   
-  # PLOT CONTACT PREDICTABILITY
-  store.ROC.All.out = NULL
+  # PLOT Accuracy
+  xshift=0.06
   
+  store.ROC.All.out = NULL
   for(ii in 1:4){
     
     load(file=paste("outputs/consist",ii,".RData",sep="")) #plot_Sposteriors
@@ -296,23 +297,41 @@ plot_predictive_power <- function(){
     
     for(typeii in 1:3){
       plotdat = store.ROC.All[store.ROC.All$train==typeii,]
-      
       if(ii==1 & typeii==1){
-        plot(plotdat$train,plotdat$accuracy,main="" ,xlab="rounds of training data",ylab="accuracy",xlim=c(0.5,3.5),ylim=c(0.5,1),pch=19,col="white",yaxs="i",xaxt="n")
+        plot(plotdat$train,plotdat$accuracy,main="" ,xlab="rounds of training data",ylab="accuracy",xlim=c(0.5,3.5),ylim=c(0.8,1),pch=19,col="white",yaxs="i",xaxt="n")
         grid(nx = 0, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
       }
-
-      points(plotdat$train,plotdat$accuracy, pch=19,col=colourpick1[ii])
+      points(plotdat$train -2*xshift+xshift*ii ,plotdat$accuracy, pch=19,col=colourpick1[ii])
     }
 
+  }
+  axis(1, at=c(1,2,3), labels=c(1,2,3)) 
+  title(LETTERS[1],adj=0)
+  
+  # PLOT F score
+  store.ROC.All.out = NULL
+  for(ii in 1:4){
+    
+    load(file=paste("outputs/consist",ii,".RData",sep="")) #plot_Sposteriors
+    store.ROC.All.out = rbind( store.ROC.All.out,cbind(rep(ii,6),store.ROC.All))
+    
+    for(typeii in 1:3){
+      plotdat = store.ROC.All[store.ROC.All$train==typeii,]
+      if(ii==1 & typeii==1){
+        plot(plotdat$train,plotdat$ff,main="" ,xlab="rounds of training data",ylab="F-measure",xlim=c(0.5,3.5),ylim=c(0.3,1),pch=19,col="white",yaxs="i",xaxt="n")
+        grid(nx = 0, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
+      }
+      points(plotdat$train -2*xshift+xshift*ii,plotdat$ff, pch=19,col=colourpick1[ii])
+    }
+    
   }
   axis(1, at=c(1,2,3), labels=c(1,2,3)) 
   
   
   
   names(store.ROC.All.out)=c("school",names(store.ROC.All))
-  write.csv(store.ROC.All.out,"plots/predict.csv")
-  title(LETTERS[1],adj=0)
+  write.csv(store.ROC.All.out,"plots/Table3.csv")
+  title(LETTERS[2],adj=0)
   
   # PLOT INTERNAL VARIABILITY
   
@@ -336,13 +355,13 @@ plot_predictive_power <- function(){
 
     #points(data.plot.degreeX,data.plot.degree1, pch=19,col=colourpick1[ii])
     #lines(data.plot.degreeX,data.plot.degree1, pch=19,col=colourpick[ii])
-    points(rep(1,3),apply(predict.2,2,mean), pch=19,col=colourpick1[ii])
-    points(rep(2,2),apply(predict.3,2,mean), pch=19,col=colourpick1[ii])
-    points(rep(3,1),mean(predict.4), pch=19,col=colourpick1[ii])
+    points(rep(1,3)-2*xshift+xshift*ii,apply(predict.2,2,mean), pch=19,col=colourpick1[ii])
+    points(rep(2,2)-2*xshift+xshift*ii,apply(predict.3,2,mean), pch=19,col=colourpick1[ii])
+    points(rep(3,1)-2*xshift+xshift*ii,mean(predict.4), pch=19,col=colourpick1[ii])
 
   }
   axis(1, at=c(1,2,3), labels=c(1,2,3)) 
-  title(LETTERS[2],adj=0)
+  title(LETTERS[3],adj=0)
   
   # PLOT EXTERNAL VARIABILITY
   
@@ -361,16 +380,16 @@ plot_predictive_power <- function(){
     }
     #points(data.plot.degreeX,data.plot.degree1, pch=19,col=colourpick1[ii])
     #lines(data.plot.degreeX,data.plot.degree1, pch=19,col=colourpick[ii])
-    points(rep(1,3),apply(predict.2,2,mean), pch=19,col=colourpick1[ii])
-    points(rep(2,2),apply(predict.3,2,mean), pch=19,col=colourpick1[ii])
-    points(rep(3,1),mean(predict.4), pch=19,col=colourpick1[ii])
+    points(rep(1,3)-2*xshift+xshift*ii,apply(predict.2,2,mean), pch=19,col=colourpick1[ii])
+    points(rep(2,2)-2*xshift+xshift*ii,apply(predict.3,2,mean), pch=19,col=colourpick1[ii])
+    points(rep(3,1)-2*xshift+xshift*ii,mean(predict.4), pch=19,col=colourpick1[ii])
     
   }
   axis(1, at=c(1,2,3), labels=c(1,2,3)) 
-  title(LETTERS[3],adj=0)
+  title(LETTERS[4],adj=0)
   
   
-  dev.copy(pdf,paste("plots/Contacts_distn.pdf",sep=""),width=4,height=6)
+  dev.copy(pdf,paste("plots/Figure_4.pdf",sep=""),width=7,height=6)
   dev.off()
   
 }

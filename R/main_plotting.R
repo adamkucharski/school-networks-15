@@ -91,5 +91,8 @@ for(school1 in 1:4){
   plot_consistency_pred(school1)
 }
 
+# - - - 
+# Figure 4 and Table 3 - assess predictive power
+plot_predictive_power()
 
 
