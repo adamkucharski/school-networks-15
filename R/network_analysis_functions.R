@@ -254,7 +254,7 @@ network.analysis <- function(round1,school1,mutualPick=0,plotALL=F,plotClass=F,p
   pickcol=sapply(col1,function(x){ifelse(x==1,'white','grey')}) # 2=F 1=M
   
   
-  degree.nodes=data.frame(cbind(xB,degree(g2.01))); names(degree.nodes)=c("node","degree")
+  degree.nodes=data.frame(cbind(xB,degree(g2.01,mode="in"))); names(degree.nodes)=c("node","degree")
   nodeID=unique(datasetP[,1]); nodeID=nodeID[!is.na(nodeID)]
   
   # Gender assortativity
@@ -289,7 +289,7 @@ network.analysis <- function(round1,school1,mutualPick=0,plotALL=F,plotClass=F,p
   }else{g2f=-1;tg2=-1}
   
   # Graph stats, including degree distribution and global clustering
-  summary=list(diameter=diameter(g2.0),ddistn=degree_distribution(g2.0),dnodes=degree.nodes,nreport=nodeID,clustering=transitivity(g2.0),
+  summary=list(diameter=diameter(g2.0),ddistn=degree_distribution(g2.0,mode = "in"),dnodes=degree.nodes,nreport=nodeID,clustering=transitivity(g2.0),
                clusteringM=transitivity(g2m),clusteringF=tg2,
                mfassort=flink,community=c(length(ceb),length(clp)))
   
@@ -394,13 +394,13 @@ network.bootstrap <- function(round1,school1,mutualPick=0,plotALL=F,boostrap_run
     }else{g2f=0;tg2=0}
     
     # Graph stats, including degree distribution and global clustering
-    bootstrap_table = rbind(bootstrap_table, c(diameter(g2.01),transitivity(g2.01),transitivity(g2m),tg2,flink[["mf"]],flink[["class"]],c(length(ceb),length(clp))) )
+    bootstrap_table = rbind(bootstrap_table, c(n_participants,diameter(g2.01),transitivity(g2.01),transitivity(g2m),tg2,flink[["mf"]],flink[["class"]],c(length(ceb),length(clp)),c(n_participants/length(ceb),n_participants/length(clp)),transitivity(g2m)-tg2) )
     
   }
   
   bootstrap_table = bootstrap_table %>% data.frame()
   
-  names(bootstrap_table) = c("diameter","clustering","clusteringM","clusteringF","assortativity_MF","assortativity_class","community_EB","community_LP")
+  names(bootstrap_table) = c("n_participants","diameter","clustering","clusteringM","clusteringF","assortativity_MF","assortativity_class","community_EB","community_LP","part_community_EB","part_community_LP","clusteringM_minus_clusteringF")
   
   apply(bootstrap_table,2,c.text)
 

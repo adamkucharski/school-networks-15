@@ -14,7 +14,7 @@ colourpick1 <- c(rgb(1,0,0.2),rgb(0,0.2,1),rgb(0,0.6,0),rgb(1,0.5,0))
 plot_degree_distn <- function(){
 
   par(mfrow=c(2,2),mar = c(3,3,1,1),mgp=c(2,0.7,0))
-  
+  mutPick = 0 
 
   #layout(matrix(c(1,2,3,4,5,5,6,6), 4,2, byrow=T))
   
@@ -29,63 +29,21 @@ plot_degree_distn <- function(){
       c(1:length(distn.store[[ii]])) #/(node.store[ii]-1)
     }
 
-    plot(norm.distn(1),distn.store[[1]],type="l",ylim=c(0,ifelse(mutPick==0,0.45,0.6)),xlab="degree",ylab="proportion",xlim=c(0,25),col=colourpick[ii])
+    #plot(norm.distn(1),distn.store[[1]],type="l",ylim=c(0,ifelse(mutPick==0,0.45,0.6)),xlab="degree",ylab="proportion",xlim=c(0,25),col=colourpick[ii])
+    plot(norm.distn(1),distn.store[[1]],log="xy",yaxt="n",xlab="indegree",ylab="proportion",xlim=c(1,25),ylim=c(0.005,0.5),col=colourpick[ii])
+    
+    axis(2, at=c(0.01,0.1,0.5),labels = c(0.01,0.1,0.5),col = "black") 
+    
     for(kk in 2:4){
-      lines(norm.distn(kk),distn.store[[kk]],col=colourpick[ii])
+      #lines(norm.distn(kk),distn.store[[kk]],col=colourpick[ii])
+      points(norm.distn(kk),distn.store[[kk]],col=colourpick[ii])
     }
+    
 
     title(LETTERS[ii],adj=0)
   }
   
-  # # Plot clustering
-  # 
-  # for(ii in 1:4){
-  #   
-  #   load(file=paste("outputs/outputs",ii,".RData",sep="")) #plot_Sposteriors
-  # 
-  #   if(ii==1){
-  #     plot(0,0,type="l",col="white",yaxt="n",xlab="",ylab="",ylim=c(0,1),xlim=c(0,1))
-  #     axis(side = 2, at = c(0.8,0.5,0.2), labels = c("All","F","M") ) #, tcl = -0.7, las = 2)
-  #   }
-  #   #axis(4,col="blue",col.axis="blue")
-  #   #mtext("clustering coefficient", side=4, line=3,col="blue") # Label for 2nd axis
-  #   
-  #   for(kk in 1:4){
-  #     points(y=0.8,x=clust.store[[kk]],col=colourpick[ii])
-  #     if(ii>0){ points(y=0.2,x=clust.storeM[[kk]],col=colourpick[ii]) }
-  #     if(ii!=3){ points(y=0.5,x=clust.storeF[[kk]],col=colourpick[ii]) }
-  #   }
-  # 
-  # }
-  # title(LETTERS[5],adj=0)
-  # 
-  # # Plot assortativity
-  # 
-  # for(ii in 1:4){
-  #   
-  #   load(file=paste("outputs/outputs",ii,".RData",sep="")) #plot_Sposteriors
-  #   
-  #   if(ii==1){
-  #     plot(0,0,type="l",col="white",yaxt="n",xlab="",ylab="",ylim=c(0,1),xlim=c(0,1))
-  #     axis(side = 2, at = c(0.75,0.25), labels = c("gender","class") ) #, tcl = -0.7, las = 2)
-  #   }
-  #   #axis(4,col="blue",col.axis="blue")
-  #   #mtext("clustering coefficient", side=4, line=3,col="blue") # Label for 2nd axis
-  #   
-  #   for(kk in 1:4){
-  #     if(ii==3){
-  #       points(y=0.75,x=1,col=colourpick[ii]) # assortativity for single-sex school = 1
-  #     }else{
-  #       points(y=0.75,x=factor.store[kk,1],col=colourpick[ii])
-  #     }
-  #     if(ii>0){ points(y=0.25,x=factor.store[kk,2],col=colourpick[ii]) }
-  #   }
-  #   
-  # }
-  # 
-  # title(LETTERS[6],adj=0)
-
-  dev.copy(pdf,paste("plots/Figure_2.pdf",sep=""),width=5,height=3)
+  dev.copy(pdf,paste("plots/Figure_2.pdf",sep=""),width=5,height=4)
   dev.off()
 
 }
@@ -347,7 +305,7 @@ plot_predictive_power <- function(){
     predict.4 = abs(node.data4[,4] - apply(node.data4[,1:3],1,mean) )
 
     if(ii==1){
-      plot(2,2,main="" ,xlab="rounds of training data",ylab="difference in degree",xlim=c(0.5,3.5),ylim=c(0,4),pch=19,col="white",yaxs="i",xaxt="n")
+      plot(2,2,main="" ,xlab="rounds of training data",ylab="difference in indegree",xlim=c(0.5,3.5),ylim=c(0,3),pch=19,col="white",yaxs="i",xaxt="n")
       #lines(c(0,4),c(0,0),col="grey")
       grid(nx = 0, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
     }

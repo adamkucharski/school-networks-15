@@ -75,7 +75,7 @@ write.csv(summary_rounds,"plots/TableS1.csv")
 summary_boot = NULL
 for(school1 in 1:4){
   source("R/load_school_data.R",local = F)
-  output_boot = network.bootstrap(1,school1,mutualPick = 0,boostrap_runs=50)
+  output_boot = network.bootstrap(1,school1,mutualPick = 0,boostrap_runs=1e3)
   summary_boot = rbind(summary_boot,output_boot)
 }
 
