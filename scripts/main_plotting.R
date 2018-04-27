@@ -92,6 +92,10 @@ for(school1 in 1:4){
 }
 
 # - - - 
+# Figure 2 - plot degree distribution
+plot_degree_distn()
+
+# - - - 
 # Figure 4 and Table 3 - assess predictive power
 plot_predictive_power()
 

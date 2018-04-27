@@ -138,7 +138,6 @@ plot_consistency_pred <- function(school1){
   
  # - - - - - - - - - - - - - - - - - - - - - - - - 
  # Predictive power of matrix in round 1
-  null.connect = total.connections + length(idlist0) #Total connections plus diagonal
   store.ROC.1 = NULL
   
   for(roundID in 2:4){
