@@ -35,7 +35,7 @@ for(school1 in 1:4){
 }
 
 # - - - 
-# Fig 2 - plot all connections
+# Fig 3 - plot all connections
 par(mfrow = c(4,2))
 for(school1 in 1:4){
   source("R/load_school_data.R",local = F)
@@ -62,12 +62,12 @@ write.csv(summary_links,"plots/Table1.csv")
 summary_rounds = NULL
 for(school1 in 1:4){
   source("R/load_school_data.R",local = F)
-  stat_school = sapply(c(1:4),function(x){y = dataset1[dataset1$Round==x,]; c(school1,x,length(y[!is.na(y$MF),"Round"]),sum(y$MF==1,na.rm=T),sum(y$MF==2,na.rm=T))  } ) %>% t()
+  stat_school = sapply(c(1:4),function(x){y = dataset1[dataset1$Round==x,]; c(school1,x,length(y[!is.na(y$MF),"Round"]),sum(y$MF==1,na.rm=T),sum(y$MF==2,na.rm=T),sum(dataset1a[dataset1$Round==x,2:7]!="0_ID_NA"))  } ) %>% t()
   summary_rounds = rbind(summary_rounds,stat_school)
 }
 
 summary_rounds = data.frame(summary_rounds)
-names(summary_rounds) = c("School","Round","Unique_part","M","F") 
+names(summary_rounds) = c("School","Round","Unique_part","M","F","Unique contacts") 
 write.csv(summary_rounds,"plots/TableS1.csv")
 
 # - - - 
@@ -75,7 +75,7 @@ write.csv(summary_rounds,"plots/TableS1.csv")
 summary_boot = NULL
 for(school1 in 1:4){
   source("R/load_school_data.R",local = F)
-  output_boot = network.bootstrap(1,school1,mutualPick = 0,boostrap_runs=1e3)
+  output_boot = network.bootstrap(1,school1,mutualPick = 0,boostrap_runs=1e4)
   summary_boot = rbind(summary_boot,output_boot)
 }
 

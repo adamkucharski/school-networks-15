@@ -94,6 +94,9 @@ network.analysis <- function(round1,school1,mutualPick=0,plotALL=F,plotClass=F,p
     plot(g2All,layout=coordAll[,2:3],vertex.size=6,vertex.shape=pickshape,vertex.color=col1mf,vertex.label=NA,vertex.label.cex=0.5,vertex.label.family="",edge.color=rgb(0.2,0.2,0.2,0.25),edge.arrow.size=0,edge.width=1) #,
     title(LETTERS[2*(school1-1)+mutualPick+1], adj=0,cex.main=1.5)
     
+    # dev.copy(pdf,paste("plots/Figure_A3.pdf",sep=""),width=12,height=10)
+    # dev.off()
+    
   }
 
   # Plot mutual links
@@ -102,8 +105,15 @@ network.analysis <- function(round1,school1,mutualPick=0,plotALL=F,plotClass=F,p
   if(mutual==1){
     datasetM=datasetP
     for(ii in 1:length(datasetP[,1])){
-      # Find mutual links - check indexing carefully!
-      datasetM[ii,2:7]=sapply(datasetM[ii,2:7],function(x){  if( !is.na(match(x,datasetP[,1])) ){if( sum(datasetM[match(x,datasetP[,1]),!is.na(datasetM[match(x,datasetP[,1]),])] ==datasetP[ii,1])==1 ){x}else{NA}}else{NA}  })
+      # Find mutual links - make sure same round
+      roundN = datasetMAIN[ii,"Round"]
+      datasetP_ROUND = datasetP[datasetMAIN$Round==roundN,]
+      datasetM[ii,2:7]=sapply(datasetP[ii,2:7],function(x){  
+        pickcontact = match(x,datasetP_ROUND[,1]); # Pick out contact
+        if( !is.na( pickcontact ) ){ # check contact is a participant in that round
+          if( sum(datasetP_ROUND[pickcontact,!is.na(datasetP_ROUND[pickcontact,])] == datasetP[ii,1])==1 ){ # check participant is contact of that contact
+            x}else{NA}}else{NA}  
+        })
     }
     NetworkMatrix=datasetM
     
@@ -136,6 +146,9 @@ network.analysis <- function(round1,school1,mutualPick=0,plotALL=F,plotClass=F,p
     plot(g2All,layout=coordAll[,2:3],vertex.size=6,vertex.shape=pickshape,vertex.color=col1mf,vertex.label=NA,vertex.label.cex=0.5,vertex.label.family="",edge.color=rgb(0.2,0.2,0.2,0.25),edge.arrow.size=0,edge.width=1) #,
     title(LETTERS[2*(school1-1)+mutualPick+2], adj=0,cex.main=1.5)
     
+    # dev.copy(pdf,paste("plots/Figure_B3.pdf",sep=""),width=12,height=10)
+    # dev.off()
+    # 
     return()
 
   }
