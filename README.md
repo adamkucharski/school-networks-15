@@ -12,4 +12,4 @@ This repository contains code to accompany analysis of self-reported social cont
 
 ### Reference:
 
-Kucharski AJ, Wenham C et al. (2018) [Structure and consistency of self-reported social contact networks in British secondary schools](TO ADD). BioRxiv
+Kucharski AJ, Wenham C et al. (2018) Structure and consistency of self-reported social contact networks in British secondary schools. BioRxiv
