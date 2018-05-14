@@ -50,7 +50,7 @@ calc.contacts<-function(school1){
 
 network.analysis <- function(round1,school1,mutualPick=0,plotALL=F,plotClass=F,plotRound=F){
 
-  # round1 = 1; mutualPick=0; school1=1 ; plotALL=T; plotClass=T; plotRound = F
+  # round1 = 1; mutualPick=0; school1=4 ; plotALL=T; plotClass=T; plotRound = F
   
   # Edit matrices to put in correct format
   # Change to ensure only draw from people in current survey
@@ -78,7 +78,7 @@ network.analysis <- function(round1,school1,mutualPick=0,plotALL=F,plotClass=F,p
   if(plotALL==T){
     
     if(plotClass==T){
-      class.names=unique(datasetMAIN$Class)
+      class.names=unique(datasetMAIN$Class) %>% sort()
       colclass0=datasetMAIN[match(xBALL,datasetP1[,1]),"Class"]
       colclass1 = match(colclass0,class.names)
       col_list = rainbow_hcl(length(class.names),l=80,c=100)
@@ -133,7 +133,7 @@ network.analysis <- function(round1,school1,mutualPick=0,plotALL=F,plotClass=F,p
   if(plotALL==T){
     
     if(plotClass==T){
-      class.names=unique(datasetMAIN$Class)
+      class.names=unique(datasetMAIN$Class) %>% sort()
       colclass0=datasetMAIN[match(xBALL,datasetP1[,1]),"Class"]
       colclass1 = match(colclass0,class.names)
       col_list = rainbow_hcl(length(class.names),l=80,c=100)

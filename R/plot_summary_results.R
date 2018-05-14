@@ -32,6 +32,8 @@ plot_degree_distn <- function(){
     #plot(norm.distn(1),distn.store[[1]],type="l",ylim=c(0,ifelse(mutPick==0,0.45,0.6)),xlab="degree",ylab="proportion",xlim=c(0,25),col=colourpick[ii])
     plot(norm.distn(1),distn.store[[1]],log="xy",yaxt="n",xlab="indegree",ylab="proportion",xlim=c(1,25),ylim=c(0.005,0.5),col=colourpick[ii])
     
+    text(x=15,y=0.3,labels = paste("School",ii),col=colourpick1[ii],cex=0.8)
+    
     axis(2, at=c(0.01,0.1,0.5),labels = c(0.01,0.1,0.5),col = "black") 
     
     for(kk in 2:4){
@@ -263,6 +265,12 @@ plot_predictive_power <- function(){
     }
 
   }
+  
+  for(ii in 1:4){
+    text(x=3.2,y=0.888-0.015*ii,labels = paste("School",ii),col=colourpick1[ii],cex=0.9)
+  }
+  
+  
   axis(1, at=c(1,2,3), labels=c(1,2,3)) 
   title(LETTERS[1],adj=0)
   
