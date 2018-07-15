@@ -32,6 +32,8 @@ plot_degree_distn <- function(){
     #plot(norm.distn(1),distn.store[[1]],type="l",ylim=c(0,ifelse(mutPick==0,0.45,0.6)),xlab="degree",ylab="proportion",xlim=c(0,25),col=colourpick[ii])
     plot(norm.distn(1),distn.store[[1]],log="xy",yaxt="n",xlab="indegree",ylab="proportion",xlim=c(1,25),ylim=c(0.005,0.5),col=colourpick[ii])
     
+    text(x=15,y=0.3,labels = paste("School",ii),col=colourpick1[ii],cex=0.8)
+    
     axis(2, at=c(0.01,0.1,0.5),labels = c(0.01,0.1,0.5),col = "black") 
     
     for(kk in 2:4){
@@ -245,6 +247,7 @@ plot_predictive_power <- function(){
   
   # PLOT Accuracy
   xshift=0.06
+  xshift2=0.03
   
   store.ROC.All.out = NULL
   for(ii in 1:4){
@@ -262,6 +265,12 @@ plot_predictive_power <- function(){
     }
 
   }
+  
+  for(ii in 1:4){
+    text(x=3.2,y=0.888-0.015*ii,labels = paste("School",ii),col=colourpick1[ii],cex=0.9)
+  }
+  
+  
   axis(1, at=c(1,2,3), labels=c(1,2,3)) 
   title(LETTERS[1],adj=0)
   
@@ -275,7 +284,7 @@ plot_predictive_power <- function(){
     for(typeii in 1:3){
       plotdat = store.ROC.All[store.ROC.All$train==typeii,]
       if(ii==1 & typeii==1){
-        plot(plotdat$train,plotdat$ff,main="" ,xlab="rounds of training data",ylab="F-measure",xlim=c(0.5,3.5),ylim=c(0.3,1),pch=19,col="white",yaxs="i",xaxt="n")
+        plot(plotdat$train,plotdat$ff,main="" ,xlab="rounds of training data",ylab="F-score",xlim=c(0.5,3.5),ylim=c(0.3,1),pch=19,col="white",yaxs="i",xaxt="n")
         grid(nx = 0, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
       }
       points(plotdat$train -2*xshift+xshift*ii,plotdat$ff, pch=19,col=colourpick1[ii])
@@ -291,6 +300,7 @@ plot_predictive_power <- function(){
   title(LETTERS[2],adj=0)
   
   # PLOT INTERNAL VARIABILITY
+  p.table.internal = NULL
   
   for(ii in 1:4){
     
@@ -300,35 +310,65 @@ plot_predictive_power <- function(){
     part.4 = length(node.data4[,1])
     
     # Difference for future rounds
-    predict.2 = abs(node.data4[,2:4] - node.data4[,1])
-    predict.3 = abs(node.data4[,3:4] - apply(node.data4[,1:2],1,mean) )
+    predict.2 = abs(node.data4[,2:4] - node.data4[,1]); dim(predict.2) = NULL
+    predict.3 = abs(node.data4[,3:4] - apply(node.data4[,1:2],1,mean) ); dim(predict.3) = NULL
     predict.4 = abs(node.data4[,4] - apply(node.data4[,1:3],1,mean) )
-
+    
+    pred.list = list(predict.2,predict.3,predict.4)
+    
     if(ii==1){
       plot(2,2,main="" ,xlab="rounds of training data",ylab="difference in indegree",xlim=c(0.5,3.5),ylim=c(0,3),pch=19,col="white",yaxs="i",xaxt="n")
       #lines(c(0,4),c(0,0),col="grey")
       grid(nx = 0, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
     }
+    
+    for(kk in 1:3){
+      if(kk<0){
+        pred.mean.val = apply(pred.list[[kk]],2,mean)
+        pred.conf.int1 = apply(pred.list[[kk]],2,function(x){mean(x)-1.96*sd(x)/sqrt(length(x))})
+        pred.conf.int2 = apply(pred.list[[kk]],2,function(x){mean(x)+1.96*sd(x)/sqrt(length(x))})
+      }else{
+        pred.mean.val = mean(pred.list[[kk]])
+        pred.conf.int1 = pred.mean.val-1.96*sd(pred.list[[kk]])/sqrt(length(pred.list[[kk]]))
+        pred.conf.int2 = pred.mean.val+1.96*sd(pred.list[[kk]])/sqrt(length(pred.list[[kk]]))
+      }
+      
+      points(rep(kk,1)-2*xshift+xshift*ii,pred.mean.val, pch=19,col=colourpick1[ii])
+      for(nn in 1:length(pred.mean.val)){
+        lines(rep(kk-2*xshift+xshift*ii,2),c(pred.conf.int1[nn],pred.conf.int2[nn]), pch=19,col=colourpick1[ii])
+      }
+    }
+    
+    p.table.internal = rbind(p.table.internal,c(ii,t.test(predict.2,predict.3,paired=FALSE)$p.value,t.test(predict.3,predict.4,paired=FALSE)$p.value))
 
-    #points(data.plot.degreeX,data.plot.degree1, pch=19,col=colourpick1[ii])
-    #lines(data.plot.degreeX,data.plot.degree1, pch=19,col=colourpick[ii])
-    points(rep(1,3)-2*xshift+xshift*ii,apply(predict.2,2,mean), pch=19,col=colourpick1[ii])
-    points(rep(2,2)-2*xshift+xshift*ii,apply(predict.3,2,mean), pch=19,col=colourpick1[ii])
-    points(rep(3,1)-2*xshift+xshift*ii,mean(predict.4), pch=19,col=colourpick1[ii])
+    # if(ii==1){
+    #   plot(2,2,main="" ,xlab="rounds of training data",ylab="difference in indegree",xlim=c(0.5,3.5),ylim=c(0,3),pch=19,col="white",yaxs="i",xaxt="n")
+    #   #lines(c(0,4),c(0,0),col="grey")
+    #   grid(nx = 0, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = TRUE)
+    # }
+    # 
+    # #points(data.plot.degreeX,data.plot.degree1, pch=19,col=colourpick1[ii])
+    # #lines(data.plot.degreeX,data.plot.degree1, pch=19,col=colourpick[ii])
+    # points(rep(1,3)-2*xshift+xshift*ii,apply(predict.2,2,mean), pch=19,col=colourpick1[ii])
+    # points(rep(2,2)-2*xshift+xshift*ii,apply(predict.3,2,mean), pch=19,col=colourpick1[ii])
+    # points(rep(3,1)-2*xshift+xshift*ii,mean(predict.4), pch=19,col=colourpick1[ii])
 
   }
   axis(1, at=c(1,2,3), labels=c(1,2,3)) 
   title(LETTERS[3],adj=0)
   
   # PLOT EXTERNAL VARIABILITY
+  p.table.external = NULL
   
   for(ii in 1:4){
     
     load(file=paste("outputs/outputs",ii,".RData",sep="")) #plot_Sposteriors
     
-    predict.2 = abs(distn.outside.class[,2:4] - distn.outside.class[,1])
-    predict.3 = abs(distn.outside.class[,3:4] - apply(distn.outside.class[,1:2],1,mean) )
+    predict.2 = abs(distn.outside.class[,2:4] - distn.outside.class[,1]); dim(predict.2) = NULL
+    predict.3 = abs(distn.outside.class[,3:4] - apply(distn.outside.class[,1:2],1,mean) ); dim(predict.3) = NULL
     predict.4 = abs(distn.outside.class[,4] - apply(distn.outside.class[,1:3],1,mean) )
+    
+    pred.list = list(predict.2,predict.3,predict.4)
     
     if(ii==1){
       plot(2,2,main="" ,xlab="rounds of training data",ylab="difference in external contacts",xlim=c(0.5,3.5),ylim=c(0,1.5),pch=19,col="white",yaxs="i",xaxt="n")
@@ -337,14 +377,38 @@ plot_predictive_power <- function(){
     }
     #points(data.plot.degreeX,data.plot.degree1, pch=19,col=colourpick1[ii])
     #lines(data.plot.degreeX,data.plot.degree1, pch=19,col=colourpick[ii])
-    points(rep(1,3)-2*xshift+xshift*ii,apply(predict.2,2,mean), pch=19,col=colourpick1[ii])
-    points(rep(2,2)-2*xshift+xshift*ii,apply(predict.3,2,mean), pch=19,col=colourpick1[ii])
-    points(rep(3,1)-2*xshift+xshift*ii,mean(predict.4), pch=19,col=colourpick1[ii])
+    for(kk in 1:3){
+
+      if(kk<0){
+        pred.mean.val = apply(pred.list[[kk]],2,mean)
+        pred.conf.int1 = apply(pred.list[[kk]],2,function(x){mean(x)-1.96*sd(x)/sqrt(length(x))})
+        pred.conf.int2 = apply(pred.list[[kk]],2,function(x){mean(x)+1.96*sd(x)/sqrt(length(x))})
+      }else{
+        pred.mean.val = mean(pred.list[[kk]])
+        pred.conf.int1 = pred.mean.val-1.96*sd(pred.list[[kk]])/sqrt(length(pred.list[[kk]]))
+        pred.conf.int2 = pred.mean.val+1.96*sd(pred.list[[kk]])/sqrt(length(pred.list[[kk]]))
+      }
+
+      points(rep(kk,1)-2*xshift+xshift*ii,pred.mean.val, pch=19,col=colourpick1[ii])
+      for(nn in 1:length(pred.mean.val)){
+        lines(rep(kk-2*xshift+xshift*ii,2),c(pred.conf.int1[nn],pred.conf.int2[nn]), pch=19,col=colourpick1[ii])
+      }
+      
+      #points(2-xshift,1,pch=8,cex=0.6,col=colourpick1[1])
+      #points(2,1,pch=8,cex=0.6,col=colourpick1[2])
+    }
+    
+    p.table.external = rbind(p.table.external,c(ii,t.test(predict.2,predict.3,paired=FALSE)$p.value,t.test(predict.3,predict.4,paired=FALSE)$p.value))
+    
     
   }
   axis(1, at=c(1,2,3), labels=c(1,2,3)) 
   title(LETTERS[4],adj=0)
   
+  
+  p.table.internal
+  
+  p.table.external
   
   dev.copy(pdf,paste("plots/Figure_4.pdf",sep=""),width=7,height=6)
   dev.off()
