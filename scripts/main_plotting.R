@@ -56,7 +56,6 @@ summary_links = data.frame(summary_links)
 names(summary_links) = c("School","Unique_part","Unique contacts") 
 write.csv(summary_links,"plots/Table1.csv")
 
-
 # - - - 
 # Table S1 - number of participants and gender split in each round
 summary_rounds = NULL
