@@ -213,7 +213,7 @@ plot_consistency_pred <- function(school1){
                       c(3, # Training round
                         roundID, # Test round
                         sum(collapse.baseline==0), # Total with no link
-                        sum(collapse.baseline==0.5), # Total ambigious
+                        sum(collapse.baseline!=0 & collapse.baseline!=1), # Total ambigious
                         sum(collapse.baseline==1), # Total with at least one unidirectional link in both rounds
                         calc.precision, # Precision
                         calc.recall, #Recall
